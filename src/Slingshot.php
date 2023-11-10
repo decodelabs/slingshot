@@ -350,6 +350,13 @@ class Slingshot
             }
 
 
+            // Self
+            if ($typeName === self::class) {
+                $args[$name] = $this;
+                continue;
+            }
+
+
             // Container value
             if (
                 $type instanceof ReflectionNamedType &&
