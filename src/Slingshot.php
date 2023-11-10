@@ -44,7 +44,8 @@ class Slingshot
     ) {
         if (
             $container === null &&
-            class_exists(Genesis::class)
+            class_exists(Genesis::class) &&
+            isset(Genesis::$container)
         ) {
             $container = Genesis::$container;
         }
@@ -393,6 +394,13 @@ class Slingshot
         }
 
         $ref = new ReflectionClass($class);
+
+        if (!$ref->isInstantiable()) {
+            throw Exceptional::Logic(
+                'Class ' . $class . ' is not instantiable'
+            );
+        }
+
         $output = $ref->newInstanceWithoutConstructor();
 
         if ($ref->hasMethod('__construct')) {
