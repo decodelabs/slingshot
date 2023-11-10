@@ -1,0 +1,33 @@
+{
+    "name": "decodelabs/slingshot",
+    "description": "Unified dependency injection invoker",
+    "type": "library",
+    "keywords": [ ],
+    "license": "MIT",
+    "authors": [ {
+            "name": "Tom Wright",
+            "email": "tom@inflatablecookie.com"
+        } ],
+    "require": {
+        "php": "^8.1",
+
+        "decodelabs/exceptional": "^0.4.4",
+
+        "psr/container": "^2.0",
+        "decodelabs/archetype": "^0.2.21"
+    },
+    "require-dev": {
+        "decodelabs/glitch": "^0.18.9",
+        "decodelabs/pandora": "^0.2.12",
+        "decodelabs/phpstan-decodelabs": "^0.6.7",
+        "decodelabs/genesis": "^0.8.3"
+    },
+    "autoload": {
+        "classmap": [ "src/" ]
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-develop": "0.1.x-dev"
+        }
+    }
+}
