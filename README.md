@@ -56,7 +56,7 @@ use DecodeLabs\Harvest\Context as HarvestContext;
 
 class Test {
     public function __construct(
-        // Fetch or create a Harvest context from container
+        // Fetch or create a Harvest Context (example) from container
         HarvestContext $param1,
         string $param2
     ) {
