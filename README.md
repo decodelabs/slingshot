@@ -69,6 +69,17 @@ $testObect = $slingshot->instantiate(Test::class, [
 ]);
 ```
 
+Objects can be added to Slingshot by type for reference matching:
+
+```php
+$object = new Test(...);
+$slingshot->addType($object);
+
+$slingshot->invoke(function(Test $test) {
+    // ...
+});
+```
+
 ## Licensing
 
 Slingshot is licensed under the MIT License. See [LICENSE](./LICENSE) for the full license text.

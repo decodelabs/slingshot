@@ -34,6 +34,11 @@ class Slingshot
     protected array $parameters = [];
 
     /**
+     * @var array<class-string<object>, object>
+     */
+    protected array $types = [];
+
+    /**
      * Init with container
      *
      * @param array<string, mixed> $parameters
@@ -168,6 +173,111 @@ class Slingshot
         return $this;
     }
 
+
+
+    /**
+     * Set types
+     *
+     * @template T of object
+     * @param array<int|class-string<T>, T> $types
+     * @return $this
+     */
+    public function setTypes(
+        array $types
+    ): static {
+        $this->types = [];
+        $this->addTypes($types);
+        return $this;
+    }
+
+    /**
+     * Add types
+     *
+     * @template T of object
+     * @param array<int|class-string<T>, T> $types
+     * @return $this
+     */
+    public function addTypes(
+        array $types
+    ): static {
+        foreach ($types as $key => $type) {
+            if (is_int($key)) {
+                $key = get_class($type);
+            }
+
+            $this->types[$key] = $type;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Has types
+     */
+    public function hasTypes(): bool
+    {
+        return !empty($this->types);
+    }
+
+    /**
+     * Get types
+     *
+     * @return array<class-string<object>, object>
+     */
+    public function getTypes(): array
+    {
+        return $this->types;
+    }
+
+
+    /**
+     * Add type
+     *
+     * @template T of object
+     * @param T $type
+     * @param class-string<T> $interface
+     */
+    public function addType(
+        object $type,
+        ?string $interface = null
+    ): static {
+        if ($interface !== null) {
+            $this->types[$interface] = $type;
+        }
+
+        $this->types[get_class($type)] = $type;
+        return $this;
+    }
+
+    /**
+     * Has type
+     *
+     * @param class-string<object> $type
+     */
+    public function hasType(
+        string $type
+    ): bool {
+        return isset($this->types[$type]);
+    }
+
+    /**
+     * Get type
+     *
+     * @template T of object
+     * @param class-string<T> $type
+     * @return T|null
+     */
+    public function getType(
+        string $type
+    ): ?object {
+        /** @var T|null $output */
+        $output = $this->types[$type] ?? null;
+        return $output;
+    }
+
+
+
+
     /**
      * Invoke method
      *
@@ -226,6 +336,16 @@ class Slingshot
                 $this->checkType($parameters[$name], $type)
             ) {
                 $args[$name] = $parameters[$param->getName()];
+                continue;
+            }
+
+
+            // Type
+            if (
+                $typeName !== null &&
+                isset($this->types[$typeName])
+            ) {
+                $args[$name] = $this->types[$typeName];
                 continue;
             }
 
