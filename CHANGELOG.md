@@ -1,3 +1,4 @@
+## v0.1.4 (2023-11-27)
 * Improved type resolution stack ordering
 
 ## v0.1.3 (2023-11-27)
