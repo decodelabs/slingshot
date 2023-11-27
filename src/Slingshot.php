@@ -418,6 +418,7 @@ class Slingshot
             if (
                 $type instanceof ReflectionNamedType &&
                 !$type->isBuiltin() &&
+                (new ReflectionClass($type->getName()))->isInstantiable() &&
                 $typeName !== null
             ) {
                 try {
@@ -439,7 +440,7 @@ class Slingshot
             }
 
             throw Exceptional::Definition(
-                'Unable to resolve constructor parameter $' . $param->getName()
+                'Unable to resolve constructor parameter '.(string)$type.' $' . $param->getName()
             );
         }
 
