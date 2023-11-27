@@ -11,16 +11,17 @@
     "require": {
         "php": "^8.1",
 
+        "decodelabs/archetype": "^0.2.21",
         "decodelabs/exceptional": "^0.4.4",
 
-        "psr/container": "^2.0",
-        "decodelabs/archetype": "^0.2.21"
+        "psr/container": "^2.0"
     },
     "require-dev": {
+        "decodelabs/dovetail": "^0.2.1",
+        "decodelabs/genesis": "^0.8.3",
         "decodelabs/glitch": "^0.18.9",
         "decodelabs/pandora": "^0.2.12",
-        "decodelabs/phpstan-decodelabs": "^0.6.7",
-        "decodelabs/genesis": "^0.8.3"
+        "decodelabs/phpstan-decodelabs": "^0.6.7"
     },
     "autoload": {
         "classmap": [ "src/" ]
