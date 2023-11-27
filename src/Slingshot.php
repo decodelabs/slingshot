@@ -90,7 +90,8 @@ class Slingshot
     public function setParameters(
         array $parameters
     ): static {
-        $this->parameters = $parameters;
+        $this->parameters = [];
+        $this->addParameters($parameters);
         return $this;
     }
 
@@ -103,10 +104,9 @@ class Slingshot
     public function addParameters(
         array $parameters
     ): static {
-        $this->parameters = array_merge(
-            $this->parameters,
-            $parameters
-        );
+        foreach ($parameters as $key => $value) {
+            $this->setParameter($key, $value);
+        }
 
         return $this;
     }
@@ -140,7 +140,17 @@ class Slingshot
         string $name,
         mixed $value
     ): static {
+        $name = $this->normalizeParameterName($name);
         $this->parameters[$name] = $value;
+
+        // Add as type
+        if (
+            is_object($value) &&
+            !$this->hasType(get_class($value))
+        ) {
+            $this->addType($value);
+        }
+
         return $this;
     }
 
@@ -150,6 +160,7 @@ class Slingshot
     public function getParameter(
         string $name
     ): mixed {
+        $name = $this->normalizeParameterName($name);
         return $this->parameters[$name] ?? null;
     }
 
@@ -159,6 +170,7 @@ class Slingshot
     public function hasParameter(
         string $name
     ): bool {
+        $name = $this->normalizeParameterName($name);
         return array_key_exists($name, $this->parameters);
     }
 
@@ -170,8 +182,21 @@ class Slingshot
     public function removeParameter(
         string $name
     ): static {
+        $name = $this->normalizeParameterName($name);
         unset($this->parameters[$name]);
         return $this;
+    }
+
+    /**
+     * Normalize parameter name
+     */
+    protected function normalizeParameterName(
+        string $name
+    ): string {
+        $name = (string)preg_replace('/[^a-zA-Z0-9_]/', '-', $name);
+        $parts = explode('-', $name);
+        $parts = array_map('ucfirst', $parts);
+        return lcfirst(implode('', $parts));
     }
 
 
