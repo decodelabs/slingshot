@@ -1,3 +1,4 @@
+* Added support for loading Dovetail configs
 * Added isInstantiable() check for interfaces
 * Added Slingshot self reference lookup in parameters
 

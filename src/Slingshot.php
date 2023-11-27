@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace DecodeLabs;
 
 use Closure;
+use DecodeLAbs\Dovetail;
 use DecodeLabs\Pandora\Container as PandoraContainer;
 use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
@@ -359,14 +360,13 @@ class Slingshot
 
             // Container value
             if (
-                $type instanceof ReflectionNamedType &&
-                !$type->isBuiltin() &&
+                $typeName !== null &&
                 $this->container
             ) {
                 if ($this->container instanceof PandoraContainer) {
-                    $value = $this->container->tryGet($type->getName());
-                } elseif ($this->container->has($type->getName())) {
-                    $value = $this->container->get($type->getName());
+                    $value = $this->container->tryGet($typeName);
+                } elseif ($this->container->has($typeName)) {
+                    $value = $this->container->get($typeName);
                 }
             }
 
@@ -378,8 +378,6 @@ class Slingshot
 
             // Archetype
             if (
-                $type instanceof ReflectionNamedType &&
-                !$type->isBuiltin() &&
                 $typeName !== null &&
                 $class = Archetype::tryResolve(
                     $typeName,
@@ -416,10 +414,8 @@ class Slingshot
 
             // New instance
             if (
-                $type instanceof ReflectionNamedType &&
-                !$type->isBuiltin() &&
-                (new ReflectionClass($type->getName()))->isInstantiable() &&
-                $typeName !== null
+                $typeName !== null &&
+                (new ReflectionClass($typeName))->isInstantiable()
             ) {
                 try {
                     $args[$name] = $this->newInstance($typeName);
@@ -431,6 +427,25 @@ class Slingshot
                 continue;
             }
 
+
+            // Dovetail
+            if (
+                class_exists(Dovetail::class) &&
+                $typeName !== null &&
+                preg_match('/([A-Z][a-z0-9_]+)\\\\Config$/', $typeName, $matches) &&
+                Dovetail::canLoad($matches[1])
+            ) {
+                try {
+                    $args[$name] = Dovetail::load($matches[1]);
+                } catch (Throwable $e) {
+                    self::$stack--;
+                    throw $e;
+                }
+
+                continue;
+            }
+
+
             self::$stack--;
 
             if (isset($parameters[$name])) {
@@ -440,7 +455,7 @@ class Slingshot
             }
 
             throw Exceptional::Definition(
-                'Unable to resolve constructor parameter '.(string)$type.' $' . $param->getName()
+                'Unable to resolve constructor parameter ' . (string)$type . ' $' . $param->getName()
             );
         }
 
