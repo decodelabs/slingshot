@@ -328,7 +328,13 @@ class Slingshot
 
         $ref = new ReflectionFunction($function);
         $args = [];
-        $parameters = array_merge($this->parameters, $parameters);
+        $params = $parameters;
+        $parameters = $this->parameters;
+
+        foreach ($params as $key => $value) {
+            $key = $this->normalizeParameterName($key);
+            $parameters[$key] = $value;
+        }
 
         foreach ($ref->getParameters() as $param) {
             $type = $param->getType();
@@ -386,16 +392,53 @@ class Slingshot
             // Container value
             if (
                 $typeName !== null &&
-                $this->container
+                $this->container &&
+                $this->container->has($typeName) &&
+                null !== ($value = $this->container->get($typeName)) &&
+                $this->checkType($value, $type)
             ) {
-                if ($this->container instanceof PandoraContainer) {
-                    $value = $this->container->tryGet($typeName);
-                } elseif ($this->container->has($typeName)) {
-                    $value = $this->container->get($typeName);
-                }
+                $args[$name] = $value;
+                continue;
             }
 
-            if ($value !== null) {
+
+            // Dovetail
+            if (
+                class_exists(Dovetail::class) &&
+                $typeName !== null &&
+                preg_match('/([A-Z][a-z0-9_]+)\\\\Config$/', $typeName, $matches) &&
+                Dovetail::canLoad($matches[1])
+            ) {
+                try {
+                    $args[$name] = Dovetail::load($matches[1]);
+                } catch (Throwable $e) {
+                    self::$stack--;
+                    throw $e;
+                }
+
+                continue;
+            }
+
+
+            // Nullable
+            if (
+                $typeName !== null &&
+                $type !== null &&
+                $type->allowsNull() &&
+                !$param->isDefaultValueAvailable()
+            ) {
+                $args[$name] = null;
+                continue;
+            }
+
+
+            // Pandora
+            if (
+                $typeName !== null &&
+                $this->container &&
+                $this->container instanceof PandoraContainer &&
+                null !== ($value = $this->container->tryGet($typeName))
+            ) {
                 $args[$name] = $value;
                 continue;
             }
@@ -428,7 +471,6 @@ class Slingshot
 
             // Null
             if (
-                $value === null &&
                 $type !== null &&
                 $type->allowsNull()
             ) {
@@ -444,24 +486,6 @@ class Slingshot
             ) {
                 try {
                     $args[$name] = $this->newInstance($typeName);
-                } catch (Throwable $e) {
-                    self::$stack--;
-                    throw $e;
-                }
-
-                continue;
-            }
-
-
-            // Dovetail
-            if (
-                class_exists(Dovetail::class) &&
-                $typeName !== null &&
-                preg_match('/([A-Z][a-z0-9_]+)\\\\Config$/', $typeName, $matches) &&
-                Dovetail::canLoad($matches[1])
-            ) {
-                try {
-                    $args[$name] = Dovetail::load($matches[1]);
                 } catch (Throwable $e) {
                     self::$stack--;
                     throw $e;
