@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace DecodeLabs;
 
 use Closure;
-use DecodeLAbs\Dovetail;
 use DecodeLabs\Pandora\Container as PandoraContainer;
 use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
@@ -580,9 +579,13 @@ class Slingshot
         array $parameters = []
     ): object {
         if (!class_exists($class)) {
-            throw Exceptional::Logic(
-                'Class ' . $class . ' does not exist'
-            );
+            if (!interface_exists($class)) {
+                throw Exceptional::Logic(
+                    'Class ' . $class . ' does not exist'
+                );
+            }
+
+            $class = Archetype::resolve($class);
         }
 
         $ref = new ReflectionClass($class);
