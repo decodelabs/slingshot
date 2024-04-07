@@ -372,13 +372,20 @@ class Slingshot
 
 
             // Type
-            if (
-                $typeName !== null &&
-                isset($this->types[$typeName])
-            ) {
-                $args[$name] = $this->types[$typeName];
-                continue;
+            if ($typeName !== null) {
+                if (isset($this->types[$typeName])) {
+                    $args[$name] = $this->types[$typeName];
+                    continue;
+                }
+
+                foreach ($this->types as $value) {
+                    if (is_a($value, $typeName)) {
+                        $args[$name] = $value;
+                        continue 2;
+                    }
+                }
             }
+
 
 
             // Self

@@ -1,3 +1,5 @@
+* Check type list for value sub-types
+
 ## v0.1.5 (2023-12-13)
 * Added interface Archetype dereferencing
 
