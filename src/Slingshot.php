@@ -198,6 +198,26 @@ class Slingshot
         return lcfirst(implode('', $parts));
     }
 
+    /**
+     * Normalize parameters
+     *
+     * @param array<string, mixed> $parameters
+     * @return array<string, mixed>
+     */
+    protected function normalizeParameters(
+        array $parameters
+    ): array {
+        $params = $parameters;
+        $parameters = $this->parameters;
+
+        foreach ($params as $key => $value) {
+            $key = $this->normalizeParameterName($key);
+            $parameters[$key] = $value;
+        }
+
+        return $parameters;
+    }
+
 
 
     /**
@@ -327,13 +347,8 @@ class Slingshot
 
         $ref = new ReflectionFunction($function);
         $args = [];
-        $params = $parameters;
-        $parameters = $this->parameters;
 
-        foreach ($params as $key => $value) {
-            $key = $this->normalizeParameterName($key);
-            $parameters[$key] = $value;
-        }
+        $parameters = $this->normalizeParameters($parameters);
 
         foreach ($ref->getParameters() as $param) {
             $type = $param->getType();
@@ -570,6 +585,73 @@ class Slingshot
         }
 
         return false;
+    }
+
+
+    /**
+     * Resolve instance
+     *
+     * @template T of object
+     * @param class-string<T> $class
+     * @param array<string, mixed> $parameters
+     * @return T
+     */
+    public function resolveInstance(
+        string $class,
+        array $parameters = []
+    ): object {
+        if ($this->container?->has($class)) {
+            $output = $this->container->get($class);
+
+            if ($output instanceof $class) {
+                return $output;
+            }
+        }
+
+        if ($output = $this->getType($class)) {
+            return $output;
+        }
+
+        foreach ($this->normalizeParameters($parameters) as $parameter) {
+            if ($parameter instanceof $class) {
+                return $parameter;
+            }
+        }
+
+        return $this->newInstance($class, $parameters);
+    }
+
+    /**
+     * Resolve named instance
+     *
+     * @template T of object
+     * @param class-string<T> $interface
+     * @param array<string, mixed> $parameters
+     * @return T
+     */
+    public function resolveNamedInstance(
+        string $interface,
+        string $name,
+        array $parameters = []
+    ): object {
+        if (
+            ($output = $this->getType($interface)) &&
+            (new ReflectionClass($output))->getShortName() === ucfirst($name)
+        ) {
+            return $output;
+        }
+
+        foreach ($this->normalizeParameters($parameters) as $parameter) {
+            if (
+                $parameter instanceof $interface &&
+                (new ReflectionClass($parameter))->getShortName() === ucfirst($name)
+            ) {
+                return $parameter;
+            }
+        }
+
+        $class = Archetype::resolve($interface, $name);
+        return $this->newInstance($class, $parameters);
     }
 
 

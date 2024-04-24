@@ -1,3 +1,5 @@
+* Added resolveInstance methods
+
 ## v0.1.6 (2024-04-07)
 * Check type list for value sub-types
 
