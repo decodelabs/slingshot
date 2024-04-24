@@ -651,7 +651,7 @@ class Slingshot
         }
 
         $class = Archetype::resolve($interface, $name);
-        return $this->newInstance($class, $parameters);
+        return $this->resolveInstance($class, $parameters);
     }
 
 

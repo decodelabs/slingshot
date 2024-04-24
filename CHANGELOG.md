@@ -1,3 +1,7 @@
+
+## v0.1.8 (2024-04-14)
+* Route resolveNamedInstance through resolveInstance
+
 ## v0.1.7 (2024-04-14)
 * Added resolveInstance methods
 
