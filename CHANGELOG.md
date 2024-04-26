@@ -1,3 +1,4 @@
+* Updated dependency list
 
 ## v0.1.8 (2024-04-24)
 * Route resolveNamedInstance through resolveInstance
