@@ -1,8 +1,11 @@
+## v0.1.9 (2024-04-26)
+* Updated Archetype dependency
+* Updated dependency list
 
-## v0.1.8 (2024-04-14)
+## v0.1.8 (2024-04-24)
 * Route resolveNamedInstance through resolveInstance
 
-## v0.1.7 (2024-04-14)
+## v0.1.7 (2024-04-24)
 * Added resolveInstance methods
 
 ## v0.1.6 (2024-04-07)
