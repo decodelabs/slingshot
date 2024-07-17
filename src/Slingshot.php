@@ -696,6 +696,8 @@ class Slingshot
                 );
             }
 
+            // Docs mismatch
+            // @phpstan-ignore-next-line
             if (!$closure = $constructor->getClosure($output)) {
                 throw Exceptional::Logic(
                     'Unable to get closure for constructor of ' . $class
