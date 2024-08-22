@@ -22,7 +22,7 @@ use Throwable;
 
 class Slingshot
 {
-    public const MAX_RECURSION = 1000;
+    protected const MaxRecursion = 1000;
 
     protected static int $stack = 0;
 
@@ -335,7 +335,7 @@ class Slingshot
         callable $function,
         array $parameters = []
     ): mixed {
-        if (++self::$stack > self::MAX_RECURSION) {
+        if (++self::$stack > self::MaxRecursion) {
             throw Exceptional::Runtime(
                 'Maximum recursion depth reached'
             );
