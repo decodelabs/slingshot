@@ -17,9 +17,6 @@
         "psr/container": "^2.0"
     },
     "require-dev": {
-        "decodelabs/dovetail": "^0.2.1",
-        "decodelabs/genesis": "^0.9",
-        "decodelabs/pandora": "^0.2.12",
         "decodelabs/phpstan-decodelabs": "^0.7"
     },
     "autoload": {
