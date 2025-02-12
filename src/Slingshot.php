@@ -24,24 +24,24 @@ class Slingshot
 {
     protected const MaxRecursion = 1000;
 
+    public ?Container $container = null;
+
     protected static int $stack = 0;
 
-    protected ?Container $container = null;
-
     /**
-     * @var array<string, mixed>
+     * @var array<string,mixed>
      */
     protected array $parameters = [];
 
     /**
-     * @var array<class-string<object>, object>
+     * @var array<class-string<object>,object>
      */
     protected array $types = [];
 
     /**
      * Init with container
      *
-     * @param array<string, mixed> $parameters
+     * @param array<string,mixed> $parameters
      */
     public function __construct(
         ?Container $container = null,
@@ -52,6 +52,7 @@ class Slingshot
             class_exists(Genesis::class) &&
             isset(Genesis::$container)
         ) {
+            /** @var Container */
             $container = Genesis::$container;
         }
 
@@ -61,29 +62,9 @@ class Slingshot
 
 
     /**
-     * Set container
-     *
-     * @return $this
-     */
-    public function setContainer(
-        ?Container $container
-    ): static {
-        $this->container = $container;
-        return $this;
-    }
-
-    /**
-     * Get container
-     */
-    public function getContainer(): ?Container
-    {
-        return $this->container;
-    }
-
-    /**
      * Set parameters
      *
-     * @param array<string, mixed> $parameters
+     * @param array<string,mixed> $parameters
      * @return $this
      */
     public function setParameters(
@@ -97,7 +78,7 @@ class Slingshot
     /**
      * Add parameters
      *
-     * @param array<string, mixed> $parameters
+     * @param array<string,mixed> $parameters
      * @return $this
      */
     public function addParameters(
@@ -201,8 +182,8 @@ class Slingshot
     /**
      * Normalize parameters
      *
-     * @param array<string, mixed> $parameters
-     * @return array<string, mixed>
+     * @param array<string,mixed> $parameters
+     * @return array<string,mixed>
      */
     protected function normalizeParameters(
         array $parameters
@@ -224,7 +205,7 @@ class Slingshot
      * Set types
      *
      * @template T of object
-     * @param array<int|class-string<T>, T> $types
+     * @param array<int|class-string<T>,T> $types
      * @return $this
      */
     public function setTypes(
@@ -239,7 +220,7 @@ class Slingshot
      * Add types
      *
      * @template T of object
-     * @param array<int|class-string<T>, T> $types
+     * @param array<int|class-string<T>,T> $types
      * @return $this
      */
     public function addTypes(
@@ -328,7 +309,7 @@ class Slingshot
      *
      * @template T
      * @param callable():T $function
-     * @param array<string, mixed> $parameters
+     * @param array<string,mixed> $parameters
      * @return T
      */
     public function invoke(
@@ -457,6 +438,7 @@ class Slingshot
             if (
                 $typeName !== null &&
                 $this->container &&
+                class_exists(PandoraContainer::class) &&
                 $this->container instanceof PandoraContainer &&
                 null !== ($value = $this->container->tryGet($typeName))
             ) {
@@ -593,7 +575,7 @@ class Slingshot
      *
      * @template T of object
      * @param class-string<T> $class
-     * @param array<string, mixed> $parameters
+     * @param array<string,mixed> $parameters
      * @return T
      */
     public function resolveInstance(
@@ -626,7 +608,7 @@ class Slingshot
      *
      * @template T of object
      * @param class-string<T> $interface
-     * @param array<string, mixed> $parameters
+     * @param array<string,mixed> $parameters
      * @return T
      */
     public function resolveNamedInstance(
@@ -636,7 +618,7 @@ class Slingshot
     ): object {
         if (
             ($output = $this->getType($interface)) &&
-            (new ReflectionClass($output))->getShortName() === ucfirst($name)
+            new ReflectionClass($output)->getShortName() === ucfirst($name)
         ) {
             return $output;
         }
@@ -644,7 +626,7 @@ class Slingshot
         foreach ($this->normalizeParameters($parameters) as $parameter) {
             if (
                 $parameter instanceof $interface &&
-                (new ReflectionClass($parameter))->getShortName() === ucfirst($name)
+                new ReflectionClass($parameter)->getShortName() === ucfirst($name)
             ) {
                 return $parameter;
             }
@@ -660,7 +642,7 @@ class Slingshot
      *
      * @template T of object
      * @param class-string<T> $class
-     * @param array<string, mixed> $parameters
+     * @param array<string,mixed> $parameters
      * @return T
      */
     public function newInstance(

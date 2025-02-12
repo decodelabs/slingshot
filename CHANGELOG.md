@@ -1,3 +1,9 @@
+## v0.1.12 (2025-02-12)
+* Updated dependencies
+* Upgraded PHPStan to v2
+* Added PHP8.4 to CI workflow
+* Made PHP8.4 minimum version
+
 ## v0.1.11 (2024-08-21)
 * Converted consts to protected PascalCase
 
