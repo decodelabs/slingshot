@@ -1,3 +1,4 @@
+## v0.1.12 (2025-02-12)
 * Updated dependencies
 * Upgraded PHPStan to v2
 * Added PHP8.4 to CI workflow
