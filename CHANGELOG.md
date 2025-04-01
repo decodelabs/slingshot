@@ -1,3 +1,8 @@
+## v0.1.13 (2025-04-01)
+* Fixed mixed type resolution
+* Improved Exception syntax
+* Updated dependencies
+
 ## v0.1.12 (2025-02-12)
 * Updated dependencies
 * Upgraded PHPStan to v2

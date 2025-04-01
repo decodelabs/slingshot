@@ -318,7 +318,7 @@ class Slingshot
     ): mixed {
         if (++self::$stack > self::MaxRecursion) {
             throw Exceptional::Runtime(
-                'Maximum recursion depth reached'
+                message: 'Maximum recursion depth reached'
             );
         }
 
@@ -352,7 +352,7 @@ class Slingshot
             ) {
                 self::$stack--;
                 throw Exceptional::Implementation(
-                    'Union and intersection types are not supported'
+                    message: 'Union and intersection types are not supported'
                 );
             }
 
@@ -502,12 +502,12 @@ class Slingshot
 
             if (isset($parameters[$name])) {
                 throw Exceptional::Definition(
-                    'Parameter $' . $name . ' is not type compatible'
+                    message: 'Parameter $' . $name . ' is not type compatible'
                 );
             }
 
             throw Exceptional::Definition(
-                'Unable to resolve constructor parameter ' . (string)$type . ' $' . $param->getName()
+                message: 'Unable to resolve constructor parameter ' . (string)$type . ' $' . $param->getName()
             );
         }
 
@@ -564,6 +564,9 @@ class Slingshot
 
             case 'resource':
                 return is_resource($value);
+
+            case 'mixed':
+                return true;
         }
 
         return false;
@@ -652,7 +655,7 @@ class Slingshot
         if (!class_exists($class)) {
             if (!interface_exists($class)) {
                 throw Exceptional::Logic(
-                    'Class ' . $class . ' does not exist'
+                    message: 'Class ' . $class . ' does not exist'
                 );
             }
 
@@ -663,7 +666,7 @@ class Slingshot
 
         if (!$ref->isInstantiable()) {
             throw Exceptional::Logic(
-                'Class ' . $class . ' is not instantiable'
+                message: 'Class ' . $class . ' is not instantiable'
             );
         }
 
@@ -674,7 +677,7 @@ class Slingshot
 
             if (!$constructor->isPublic()) {
                 throw Exceptional::Logic(
-                    'Class ' . $class . ' has a non-public constructor'
+                    message: 'Class ' . $class . ' has a non-public constructor'
                 );
             }
 
@@ -682,7 +685,7 @@ class Slingshot
             // @phpstan-ignore-next-line
             if (!$closure = $constructor->getClosure($output)) {
                 throw Exceptional::Logic(
-                    'Unable to get closure for constructor of ' . $class
+                    message: 'Unable to get closure for constructor of ' . $class
                 );
             }
 
