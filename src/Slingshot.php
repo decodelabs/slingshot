@@ -564,6 +564,9 @@ class Slingshot
 
             case 'resource':
                 return is_resource($value);
+
+            case 'mixed':
+                return true;
         }
 
         return false;
