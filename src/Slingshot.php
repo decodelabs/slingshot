@@ -192,7 +192,7 @@ class Slingshot
         $parameters = $this->parameters;
 
         foreach ($params as $key => $value) {
-            $key = $this->normalizeParameterName($key);
+            $key = $this->normalizeParameterName((string)$key);
             $parameters[$key] = $value;
         }
 

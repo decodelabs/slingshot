@@ -1,3 +1,6 @@
+## v0.1.14 (2025-04-01)
+* Ensure parameter list keys are string
+
 ## v0.1.13 (2025-04-01)
 * Fixed mixed type resolution
 * Improved Exception syntax
