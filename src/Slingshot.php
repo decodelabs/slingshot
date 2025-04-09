@@ -49,11 +49,11 @@ class Slingshot
     ) {
         if (
             $container === null &&
-            class_exists(Genesis::class) &&
-            isset(Genesis::$container)
+            class_exists(Monarch::class) &&
+            isset(Monarch::$container)
         ) {
             /** @var Container */
-            $container = Genesis::$container;
+            $container = Monarch::$container;
         }
 
         $this->container = $container;

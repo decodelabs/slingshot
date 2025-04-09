@@ -1,3 +1,6 @@
+## v0.2.0 (2025-04-09)
+* Switched to Monarch for default container
+
 ## v0.1.14 (2025-04-01)
 * Ensure parameter list keys are string
 
