@@ -11,8 +11,6 @@
 
 Slingshot provides a simple interface for invoking methods on objects with dependency injection.
 
-_Get news and updates on the [DecodeLabs blog](https://blog.decodelabs.com)._
-
 ---
 
 ## Installation
