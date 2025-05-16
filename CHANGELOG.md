@@ -1,56 +1,143 @@
-## v0.2.0 (2025-04-09)
-* Switched to Monarch for default container
+# Changelog
 
-## v0.1.14 (2025-04-01)
-* Ensure parameter list keys are string
+All notable changes to this project will be documented in this file.<br>
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v0.1.13 (2025-04-01)
-* Fixed mixed type resolution
-* Improved Exception syntax
-* Updated dependencies
+### Unreleased
+--
 
-## v0.1.12 (2025-02-12)
-* Updated dependencies
-* Upgraded PHPStan to v2
-* Added PHP8.4 to CI workflow
-* Made PHP8.4 minimum version
+---
 
-## v0.1.11 (2024-08-21)
-* Converted consts to protected PascalCase
+### [v0.2.0](https://github.com/decodelabs/slingshot/commits/v0.2.0) - 9th April 2025
 
-## v0.1.10 (2024-08-21)
-* Updated dependencies
+- Switched to Monarch for default container
 
-## v0.1.9 (2024-04-26)
-* Updated Archetype dependency
-* Updated dependency list
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.14...v0.2.0)
 
-## v0.1.8 (2024-04-24)
-* Route resolveNamedInstance through resolveInstance
+---
 
-## v0.1.7 (2024-04-24)
-* Added resolveInstance methods
+### [v0.1.14](https://github.com/decodelabs/slingshot/commits/v0.1.14) - 1st April 2025
 
-## v0.1.6 (2024-04-07)
-* Check type list for value sub-types
+- Ensure parameter list keys are string
 
-## v0.1.5 (2023-12-13)
-* Added interface Archetype dereferencing
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.13...v0.1.14)
 
-## v0.1.4 (2023-11-27)
-* Improved type resolution stack ordering
+---
 
-## v0.1.3 (2023-11-27)
-* Use normalized variable-valid parameter names
-* Add parameters as types if object
+### [v0.1.13](https://github.com/decodelabs/slingshot/commits/v0.1.13) - 1st April 2025
 
-## v0.1.2 (2023-11-27)
-* Added support for loading Dovetail configs
-* Added isInstantiable() check for interfaces
-* Added Slingshot self reference lookup in parameters
+- Fixed mixed type resolution
+- Improved Exception syntax
+- Updated dependencies
 
-## v0.1.1 (2023-11-10)
-* Added object type dictionary
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.12...v0.1.13)
 
-## v0.1.0 (2023-11-10)
-* Built initial implementation
+---
+
+### [v0.1.12](https://github.com/decodelabs/slingshot/commits/v0.1.12) - 12th February 2025
+
+- Updated dependencies
+- Upgraded PHPStan to v2
+- Added PHP8.4 to CI workflow
+- Made PHP8.4 minimum version
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.11...v0.1.12)
+
+---
+
+### [v0.1.11](https://github.com/decodelabs/slingshot/commits/v0.1.11) - 21st August 2024
+
+- Converted consts to protected PascalCase
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.10...v0.1.11)
+
+---
+
+### [v0.1.10](https://github.com/decodelabs/slingshot/commits/v0.1.10) - 21st August 2024
+
+- Updated dependencies
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.9...v0.1.10)
+
+---
+
+### [v0.1.9](https://github.com/decodelabs/slingshot/commits/v0.1.9) - 26th April 2024
+
+- Updated Archetype dependency
+- Updated dependency list
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.8...v0.1.9)
+
+---
+
+### [v0.1.8](https://github.com/decodelabs/slingshot/commits/v0.1.8) - 24th April 2024
+
+- Route resolveNamedInstance through resolveInstance
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.7...v0.1.8)
+
+---
+
+### [v0.1.7](https://github.com/decodelabs/slingshot/commits/v0.1.7) - 24th April 2024
+
+- Added resolveInstance methods
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.6...v0.1.7)
+
+---
+
+### [v0.1.6](https://github.com/decodelabs/slingshot/commits/v0.1.6) - 7th April 2024
+
+- Check type list for value sub-types
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.5...v0.1.6)
+
+---
+
+### [v0.1.5](https://github.com/decodelabs/slingshot/commits/v0.1.5) - 13th December 2023
+
+- Added interface Archetype dereferencing
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.4...v0.1.5)
+
+---
+
+### [v0.1.4](https://github.com/decodelabs/slingshot/commits/v0.1.4) - 27th November 2023
+
+- Improved type resolution stack ordering
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.3...v0.1.4)
+
+---
+
+### [v0.1.3](https://github.com/decodelabs/slingshot/commits/v0.1.3) - 27th November 2023
+
+- Use normalized variable-valid parameter names
+- Add parameters as types if object
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.2...v0.1.3)
+
+---
+
+### [v0.1.2](https://github.com/decodelabs/slingshot/commits/v0.1.2) - 27th November 2023
+
+- Added support for loading Dovetail configs
+- Added isInstantiable() check for interfaces
+- Added Slingshot self reference lookup in parameters
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.1...v0.1.2)
+
+---
+
+### [v0.1.1](https://github.com/decodelabs/slingshot/commits/v0.1.1) - 10th November 2023
+
+- Added object type dictionary
+
+[Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.1.0...v0.1.1)
+
+---
+
+### [v0.1.0](https://github.com/decodelabs/slingshot/commits/v0.1.0) - 10th November 2023
+
+- Built initial implementation
