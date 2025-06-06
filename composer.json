@@ -12,8 +12,8 @@
         "php": "^8.4",
         "psr/container": "^2.0.2",
 
-        "decodelabs/archetype": "^0.3.8",
-        "decodelabs/exceptional": "^0.5.2"
+        "decodelabs/archetype": "^0.3.10",
+        "decodelabs/exceptional": "^0.6.1"
     },
     "require-dev": {
         "decodelabs/phpstan-decodelabs": "^0.7"
