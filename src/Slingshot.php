@@ -52,7 +52,7 @@ class Slingshot
             class_exists(Monarch::class) &&
             isset(Monarch::$container)
         ) {
-            /** @var Container */
+            /** @var Container $container */
             $container = Monarch::$container;
         }
 
