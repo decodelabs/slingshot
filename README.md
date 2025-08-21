@@ -50,12 +50,12 @@ $output = $slingshot->invoke(test(...), [
 Or instantiate an object with dependency injection:
 
 ```php
-use DecodeLabs\Harvest\Context as HarvestContext;
+use DecodeLabs\Harvest;
 
 class Test {
     public function __construct(
-        // Fetch or create a Harvest Context (example) from container
-        HarvestContext $param1,
+        // Fetch the Harvest service (example) from container
+        Harvest $param1,
         string $param2
     ) {
         // ...

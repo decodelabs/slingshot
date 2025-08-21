@@ -10,7 +10,12 @@ declare(strict_types=1);
 namespace DecodeLabs;
 
 use Closure;
-use DecodeLabs\Pandora\Container as PandoraContainer;
+use DecodeLabs\Archetype;
+use DecodeLabs\Kingdom\ContainerAdapter;
+use DecodeLabs\Kingdom\EagreService;
+use DecodeLabs\Kingdom\Service;
+use DecodeLabs\Kingdom\PureService;
+use DecodeLabs\Monarch;
 use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
 use ReflectionFunction;
@@ -24,8 +29,6 @@ class Slingshot
 {
     protected const MaxRecursion = 1000;
 
-    public ?Container $container = null;
-
     protected static int $stack = 0;
 
     /**
@@ -38,32 +41,54 @@ class Slingshot
      */
     protected array $types = [];
 
+    public ?Container $container = null;
+
+    public Archetype $archetype {
+        get {
+            // @phpstan-ignore-next-line
+            return $this->archetype ??=
+                $this->container instanceof ContainerAdapter
+                    ? $this->container->get(Archetype::class)
+                    : Monarch::getService(Archetype::class);
+        }
+    }
+
     /**
-     * Init with container
-     *
+     * @template T of object
      * @param array<string,mixed> $parameters
+     * @param array<int|class-string<T>,T> $types
      */
     public function __construct(
         ?Container $container = null,
-        array $parameters = []
+        array $parameters = [],
+        array $types = [],
+        ?Archetype $archetype = null
     ) {
         if (
             $container === null &&
-            class_exists(Monarch::class) &&
-            isset(Monarch::$container)
+            Monarch::hasKingdom()
         ) {
-            /** @var Container $container */
-            $container = Monarch::$container;
+            $container = Monarch::getKingdom()->container;
+
+            if (!$container instanceof Container) {
+                $container = $container->getPsrContainer();
+            }
         }
 
         $this->container = $container;
         $this->parameters = $parameters;
+
+        if (!empty($types)) {
+            $this->setTypes($types);
+        }
+
+        if ($archetype !== null) {
+            $this->archetype = $archetype;
+        }
     }
 
 
     /**
-     * Set parameters
-     *
      * @param array<string,mixed> $parameters
      * @return $this
      */
@@ -76,8 +101,6 @@ class Slingshot
     }
 
     /**
-     * Add parameters
-     *
      * @param array<string,mixed> $parameters
      * @return $this
      */
@@ -91,17 +114,12 @@ class Slingshot
         return $this;
     }
 
-    /**
-     * Has parameters
-     */
     public function hasParameters(): bool
     {
         return !empty($this->parameters);
     }
 
     /**
-     * Get parameters
-     *
      * @return array<string, mixed>
      */
     public function getParameters(): array
@@ -112,8 +130,6 @@ class Slingshot
 
 
     /**
-     * Set parameter
-     *
      * @return $this
      */
     public function setParameter(
@@ -134,9 +150,6 @@ class Slingshot
         return $this;
     }
 
-    /**
-     * Get parameter
-     */
     public function getParameter(
         string $name
     ): mixed {
@@ -144,9 +157,6 @@ class Slingshot
         return $this->parameters[$name] ?? null;
     }
 
-    /**
-     * Has parameter
-     */
     public function hasParameter(
         string $name
     ): bool {
@@ -155,8 +165,6 @@ class Slingshot
     }
 
     /**
-     * Remove parameter
-     *
      * @return $this
      */
     public function removeParameter(
@@ -167,9 +175,6 @@ class Slingshot
         return $this;
     }
 
-    /**
-     * Normalize parameter name
-     */
     protected function normalizeParameterName(
         string $name
     ): string {
@@ -180,8 +185,6 @@ class Slingshot
     }
 
     /**
-     * Normalize parameters
-     *
      * @param array<string,mixed> $parameters
      * @return array<string,mixed>
      */
@@ -202,8 +205,6 @@ class Slingshot
 
 
     /**
-     * Set types
-     *
      * @template T of object
      * @param array<int|class-string<T>,T> $types
      * @return $this
@@ -217,8 +218,6 @@ class Slingshot
     }
 
     /**
-     * Add types
-     *
      * @template T of object
      * @param array<int|class-string<T>,T> $types
      * @return $this
@@ -237,17 +236,12 @@ class Slingshot
         return $this;
     }
 
-    /**
-     * Has types
-     */
     public function hasTypes(): bool
     {
         return !empty($this->types);
     }
 
     /**
-     * Get types
-     *
      * @return array<class-string<object>, object>
      */
     public function getTypes(): array
@@ -257,8 +251,6 @@ class Slingshot
 
 
     /**
-     * Add type
-     *
      * @template T of object
      * @param T $type
      * @param class-string<T> $interface
@@ -276,8 +268,6 @@ class Slingshot
     }
 
     /**
-     * Has type
-     *
      * @param class-string<object> $type
      */
     public function hasType(
@@ -287,8 +277,6 @@ class Slingshot
     }
 
     /**
-     * Get type
-     *
      * @template T of object
      * @param class-string<T> $type
      * @return T|null
@@ -305,8 +293,6 @@ class Slingshot
 
 
     /**
-     * Invoke method
-     *
      * @template T
      * @param callable():T $function
      * @param array<string,mixed> $parameters
@@ -330,8 +316,9 @@ class Slingshot
         $args = [];
 
         $parameters = $this->normalizeParameters($parameters);
+        $variadicParams = $parameters;
 
-        foreach ($ref->getParameters() as $param) {
+        foreach ($ref->getParameters() as $i => $param) {
             $type = $param->getType();
             $name = $param->getName();
             $value = null;
@@ -346,14 +333,17 @@ class Slingshot
                 $typeName = null;
             }
 
-            if (
-                $type instanceof ReflectionUnionType ||
-                $type instanceof ReflectionIntersectionType
-            ) {
+
+            if ($type instanceof ReflectionIntersectionType) {
                 self::$stack--;
                 throw Exceptional::Implementation(
-                    message: 'Union and intersection types are not supported'
+                    message: 'Intersection types are not supported - param: ' . $name
                 );
+            }
+
+            if ($param->isVariadic()) {
+                $args += $variadicParams;
+                break;
             }
 
 
@@ -363,6 +353,7 @@ class Slingshot
                 $this->checkType($parameters[$name], $type)
             ) {
                 $args[$name] = $parameters[$param->getName()];
+                unset($variadicParams[$name]);
                 continue;
             }
 
@@ -391,77 +382,74 @@ class Slingshot
             }
 
 
-            // Container value
-            if (
-                $typeName !== null &&
-                $this->container &&
-                $this->container->has($typeName) &&
-                null !== ($value = $this->container->get($typeName)) &&
-                $this->checkType($value, $type)
-            ) {
-                $args[$name] = $value;
-                continue;
-            }
+            if ($typeName !== null) {
+                // Container
+                if ($this->container instanceof ContainerAdapter) {
+                    if ($this->container->has($typeName)) {
+                        $args[$name] = $this->container->get($typeName);
+                        continue;
+                    }
 
+                    if (is_a($typeName, Service::class, true)) {
+                        $ref = new ReflectionClass($typeName);
+                        $container = $this->container;
 
-            // Dovetail
-            if (
-                class_exists(Dovetail::class) &&
-                $typeName !== null &&
-                preg_match('/([A-Z][a-z0-9_]+)\\\\Config$/', $typeName, $matches) &&
-                Dovetail::canLoad($matches[1])
-            ) {
-                try {
-                    $args[$name] = Dovetail::load($matches[1]);
-                } catch (Throwable $e) {
-                    self::$stack--;
-                    throw $e;
+                        $args[$name] = $ref->newLazyProxy(
+                            function () use ($typeName, $container) {
+                                if (is_a($typeName, PureService::class, true)) {
+                                    return $typeName::providePureService();
+                                }
+
+                                return $typeName::provideService($container);
+                            }
+                        );
+
+                        if (is_a($typeName, EagreService::class, true)) {
+                            $ref->initializeLazyObject($args[$name]);
+                        }
+
+                        continue;
+                    }
+
+                    if (null !== ($value = $this->container->tryGet($typeName))) {
+                        $args[$name] = $value;
+                        continue;
+                    }
+                } elseif (
+                    $this->container?->has($typeName) &&
+                    null !== ($value = $this->container->get($typeName)) &&
+                    $this->checkType($value, $type)
+                ) {
+                    $args[$name] = $value;
+                    continue;
                 }
 
-                continue;
-            }
+
+                // Nullable
+                if (
+                    $type !== null &&
+                    $type->allowsNull() &&
+                    !$param->isDefaultValueAvailable()
+                ) {
+                    $args[$name] = null;
+                    continue;
+                }
 
 
-            // Nullable
-            if (
-                $typeName !== null &&
-                $type !== null &&
-                $type->allowsNull() &&
-                !$param->isDefaultValueAvailable()
-            ) {
-                $args[$name] = null;
-                continue;
-            }
 
-
-            // Pandora
-            if (
-                $typeName !== null &&
-                $this->container &&
-                class_exists(PandoraContainer::class) &&
-                $this->container instanceof PandoraContainer &&
-                null !== ($value = $this->container->tryGet($typeName))
-            ) {
-                $args[$name] = $value;
-                continue;
-            }
-
-
-            // Archetype
-            if (
-                $typeName !== null &&
-                $class = Archetype::tryResolve(
+                // Archetype
+                if ($class = $this->archetype->tryResolve(
                     $typeName,
                     [$name, null]
-                )
-            ) {
-                try {
-                    $args[$name] = $this->newInstance($class);
-                } catch (Throwable $e) {
-                    self::$stack--;
-                    throw $e;
+                )) {
+                    try {
+                        $args[$name] = $this->newInstance($class);
+                    } catch (Throwable $e) {
+                        self::$stack--;
+                        throw $e;
+                    }
+                    continue;
                 }
-                continue;
             }
 
 
@@ -507,7 +495,8 @@ class Slingshot
             }
 
             throw Exceptional::Definition(
-                message: 'Unable to resolve constructor parameter ' . (string)$type . ' $' . $param->getName()
+                message: 'Unable to resolve constructor parameter ' . (string)$type . ' $' . $param->getName(),
+                data: $function
             );
         }
 
@@ -515,17 +504,28 @@ class Slingshot
     }
 
 
-    /**
-     * Check type of value
-     */
     protected function checkType(
         mixed $value,
         ?ReflectionType $type
     ): bool {
         if (
             $type === null ||
-            !$type instanceof ReflectionNamedType
+            $type instanceof ReflectionIntersectionType
         ) {
+            return true;
+        }
+
+        if ($type instanceof ReflectionUnionType) {
+            foreach ($type->getTypes() as $innerType) {
+                if ($this->checkType($value, $innerType)) {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        if (!$type instanceof ReflectionNamedType) {
             return true;
         }
 
@@ -574,8 +574,6 @@ class Slingshot
 
 
     /**
-     * Resolve instance
-     *
      * @template T of object
      * @param class-string<T> $class
      * @param array<string,mixed> $parameters
@@ -593,6 +591,18 @@ class Slingshot
             }
         }
 
+        if (
+            is_a($class, Service::class, true) &&
+            $this->container instanceof ContainerAdapter
+        ) {
+            if ($this->container->has($class)) {
+                // @phpstan-ignore-next-line
+                return $this->container->get($class);
+            }
+
+            return $class::provideService($this->container);
+        }
+
         if ($output = $this->getType($class)) {
             return $output;
         }
@@ -607,8 +617,6 @@ class Slingshot
     }
 
     /**
-     * Resolve named instance
-     *
      * @template T of object
      * @param class-string<T> $interface
      * @param array<string,mixed> $parameters
@@ -619,6 +627,28 @@ class Slingshot
         string $name,
         array $parameters = []
     ): object {
+        $output = $this->tryResolveNamedInstance($interface, $name, $parameters);
+
+        if ($output === null) {
+            throw Exceptional::Runtime(
+                message: 'Unable to resolve named instance ' . $name . ' for interface ' . $interface
+            );
+        }
+
+        return $output;
+    }
+
+    /**
+     * @template T of object
+     * @param class-string<T> $interface
+     * @param array<string,mixed> $parameters
+     * @return T
+     */
+    public function tryResolveNamedInstance(
+        string $interface,
+        string $name,
+        array $parameters = []
+    ): ?object {
         if (
             ($output = $this->getType($interface)) &&
             new ReflectionClass($output)->getShortName() === ucfirst($name)
@@ -635,14 +665,17 @@ class Slingshot
             }
         }
 
-        $class = Archetype::resolve($interface, $name);
+        $class = $this->archetype->tryResolve($interface, $name);
+
+        if ($class === null) {
+            return null;
+        }
+
         return $this->resolveInstance($class, $parameters);
     }
 
 
     /**
-     * Create new instance
-     *
      * @template T of object
      * @param class-string<T> $class
      * @param array<string,mixed> $parameters
@@ -659,7 +692,7 @@ class Slingshot
                 );
             }
 
-            $class = Archetype::resolve($class);
+            $class = $this->archetype->resolve($class);
         }
 
         $ref = new ReflectionClass($class);
