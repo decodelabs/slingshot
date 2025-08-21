@@ -10,12 +10,10 @@ declare(strict_types=1);
 namespace DecodeLabs;
 
 use Closure;
-use DecodeLabs\Archetype;
 use DecodeLabs\Kingdom\ContainerAdapter;
 use DecodeLabs\Kingdom\EagreService;
-use DecodeLabs\Kingdom\Service;
 use DecodeLabs\Kingdom\PureService;
-use DecodeLabs\Monarch;
+use DecodeLabs\Kingdom\Service;
 use Psr\Container\ContainerInterface as Container;
 use ReflectionClass;
 use ReflectionFunction;
