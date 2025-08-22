@@ -19,6 +19,7 @@ use ReflectionClass;
 use ReflectionFunction;
 use ReflectionIntersectionType;
 use ReflectionNamedType;
+use ReflectionParameter;
 use ReflectionType;
 use ReflectionUnionType;
 use Throwable;
@@ -183,16 +184,26 @@ class Slingshot
     }
 
     /**
-     * @param array<string,mixed> $parameters
+     * @param array<mixed> $parameters
+     * @param array<ReflectionParameter> $refParams
      * @return array<string,mixed>
      */
     protected function normalizeParameters(
-        array $parameters
+        array $parameters,
+        array $refParams
     ): array {
         $params = $parameters;
         $parameters = $this->parameters;
 
         foreach ($params as $key => $value) {
+            if (is_int($key)) {
+                if (!isset($refParams[$key])) {
+                    continue;
+                }
+
+                $key = $refParams[$key]->getName();
+            }
+
             $key = $this->normalizeParameterName((string)$key);
             $parameters[$key] = $value;
         }
@@ -293,7 +304,7 @@ class Slingshot
     /**
      * @template T
      * @param callable():T $function
-     * @param array<string,mixed> $parameters
+     * @param array<mixed> $parameters
      * @return T
      */
     public function invoke(
@@ -313,7 +324,10 @@ class Slingshot
         $ref = new ReflectionFunction($function);
         $args = [];
 
-        $parameters = $this->normalizeParameters($parameters);
+
+
+
+        $parameters = $this->normalizeParameters($parameters, $ref->getParameters());
         $variadicParams = $parameters;
 
         foreach ($ref->getParameters() as $i => $param) {
@@ -449,6 +463,7 @@ class Slingshot
                     continue;
                 }
             }
+
 
 
             // Default value
@@ -605,7 +620,7 @@ class Slingshot
             return $output;
         }
 
-        foreach ($this->normalizeParameters($parameters) as $parameter) {
+        foreach ($parameters as $parameter) {
             if ($parameter instanceof $class) {
                 return $parameter;
             }
@@ -654,7 +669,7 @@ class Slingshot
             return $output;
         }
 
-        foreach ($this->normalizeParameters($parameters) as $parameter) {
+        foreach ($parameters as $parameter) {
             if (
                 $parameter instanceof $interface &&
                 new ReflectionClass($parameter)->getShortName() === ucfirst($name)
