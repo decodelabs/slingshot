@@ -500,7 +500,7 @@ class Slingshot
 
             if (isset($parameters[$name])) {
                 throw Exceptional::Definition(
-                    message: 'Parameter $' . $name . ' is not type compatible - ' . $type->getName() . ' expected, ' . get_debug_type($parameters[$name]) . ' given'
+                    message: 'Parameter $' . $name . ' is not type compatible - ' . $type . ' expected, ' . gettype($parameters[$name]) . ' given'
                 );
             }
 
