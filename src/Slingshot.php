@@ -324,9 +324,6 @@ class Slingshot
         $ref = new ReflectionFunction($function);
         $args = [];
 
-
-
-
         $parameters = $this->normalizeParameters($parameters, $ref->getParameters());
         $variadicParams = $parameters;
 
@@ -503,7 +500,7 @@ class Slingshot
 
             if (isset($parameters[$name])) {
                 throw Exceptional::Definition(
-                    message: 'Parameter $' . $name . ' is not type compatible'
+                    message: 'Parameter $' . $name . ' is not type compatible - ' . $type->getName() . ' expected, ' . get_debug_type($parameters[$name]) . ' given'
                 );
             }
 
