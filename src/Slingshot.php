@@ -640,7 +640,7 @@ class Slingshot
         $output = $this->tryResolveNamedInstance($interface, $name, $parameters);
 
         if ($output === null) {
-            throw Exceptional::Runtime(
+            throw Exceptional::NotFound(
                 message: 'Unable to resolve named instance ' . $name . ' for interface ' . $interface
             );
         }
