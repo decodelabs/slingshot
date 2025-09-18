@@ -317,200 +317,192 @@ class Slingshot
             );
         }
 
-        if (!$function instanceof Closure) {
-            $function = Closure::fromCallable($function);
-        }
-
-        $ref = new ReflectionFunction($function);
-        $args = [];
-
-        $parameters = $this->normalizeParameters($parameters, $ref->getParameters());
-        $variadicParams = $parameters;
-
-        foreach ($ref->getParameters() as $i => $param) {
-            $type = $param->getType();
-            $name = $param->getName();
-            $value = null;
-
-            if (
-                $type instanceof ReflectionNamedType &&
-                !$type->isBuiltin()
-            ) {
-                /** @var class-string<object> $typeName */
-                $typeName = $type->getName();
-            } else {
-                $typeName = null;
+        try {
+            if (!$function instanceof Closure) {
+                $function = Closure::fromCallable($function);
             }
 
+            $ref = new ReflectionFunction($function);
+            $args = [];
 
-            if ($type instanceof ReflectionIntersectionType) {
-                self::$stack--;
-                throw Exceptional::Implementation(
-                    message: 'Intersection types are not supported - param: ' . $name
-                );
-            }
+            $parameters = $this->normalizeParameters($parameters, $ref->getParameters());
+            $variadicParams = $parameters;
 
-            if ($param->isVariadic()) {
-                $args += $variadicParams;
-                break;
-            }
+            foreach ($ref->getParameters() as $i => $param) {
+                $type = $param->getType();
+                $name = $param->getName();
+                $value = null;
 
-
-            // Parameter value
-            if (
-                array_key_exists($name, $parameters) &&
-                $this->checkType($parameters[$name], $type)
-            ) {
-                $args[$name] = $parameters[$param->getName()];
-                unset($variadicParams[$name]);
-                continue;
-            }
+                if (
+                    $type instanceof ReflectionNamedType &&
+                    !$type->isBuiltin()
+                ) {
+                    /** @var class-string<object> $typeName */
+                    $typeName = $type->getName();
+                } else {
+                    $typeName = null;
+                }
 
 
-            // Type
-            if ($typeName !== null) {
-                if (isset($this->types[$typeName])) {
-                    $args[$name] = $this->types[$typeName];
+                if ($type instanceof ReflectionIntersectionType) {
+                    throw Exceptional::Implementation(
+                        message: 'Intersection types are not supported - param: ' . $name
+                    );
+                }
+
+                if ($param->isVariadic()) {
+                    $args += $variadicParams;
+                    break;
+                }
+
+
+                // Parameter value
+                if (
+                    array_key_exists($name, $parameters) &&
+                    $this->checkType($parameters[$name], $type)
+                ) {
+                    $args[$name] = $parameters[$param->getName()];
+                    unset($variadicParams[$name]);
                     continue;
                 }
 
-                foreach ($this->types as $value) {
-                    if (is_a($value, $typeName)) {
-                        $args[$name] = $value;
-                        continue 2;
-                    }
-                }
-            }
 
-
-
-            // Self
-            if ($typeName === self::class) {
-                $args[$name] = $this;
-                continue;
-            }
-
-
-            if ($typeName !== null) {
-                // Container
-                if ($this->container instanceof ContainerAdapter) {
-                    if ($this->container->has($typeName)) {
-                        $args[$name] = $this->container->get($typeName);
+                // Type
+                if ($typeName !== null) {
+                    if (isset($this->types[$typeName])) {
+                        $args[$name] = $this->types[$typeName];
                         continue;
                     }
 
-                    if (is_a($typeName, Service::class, true)) {
-                        $ref = new ReflectionClass($typeName);
-                        $container = $this->container;
+                    foreach ($this->types as $value) {
+                        if (is_a($value, $typeName)) {
+                            $args[$name] = $value;
+                            continue 2;
+                        }
+                    }
+                }
 
-                        $args[$name] = $ref->newLazyProxy(
-                            function () use ($typeName, $container) {
-                                if (is_a($typeName, PureService::class, true)) {
-                                    return $typeName::providePureService();
-                                }
 
-                                return $typeName::provideService($container);
-                            }
-                        );
 
-                        if (is_a($typeName, EagreService::class, true)) {
-                            $ref->initializeLazyObject($args[$name]);
+                // Self
+                if ($typeName === self::class) {
+                    $args[$name] = $this;
+                    continue;
+                }
+
+
+                if ($typeName !== null) {
+                    // Container
+                    if ($this->container instanceof ContainerAdapter) {
+                        if ($this->container->has($typeName)) {
+                            $args[$name] = $this->container->get($typeName);
+                            continue;
                         }
 
-                        continue;
-                    }
+                        if (is_a($typeName, Service::class, true)) {
+                            $ref = new ReflectionClass($typeName);
+                            $container = $this->container;
 
-                    if (null !== ($value = $this->container->tryGet($typeName))) {
+                            $args[$name] = $ref->newLazyProxy(
+                                function () use ($typeName, $container) {
+                                    if (is_a($typeName, PureService::class, true)) {
+                                        return $typeName::providePureService();
+                                    }
+
+                                    return $typeName::provideService($container);
+                                }
+                            );
+
+                            if (is_a($typeName, EagreService::class, true)) {
+                                $ref->initializeLazyObject($args[$name]);
+                            }
+
+                            continue;
+                        }
+
+                        if (null !== ($value = $this->container->tryGet($typeName))) {
+                            $args[$name] = $value;
+                            continue;
+                        }
+                    } elseif (
+                        $this->container?->has($typeName) &&
+                        null !== ($value = $this->container->get($typeName)) &&
+                        $this->checkType($value, $type)
+                    ) {
                         $args[$name] = $value;
                         continue;
                     }
-                } elseif (
-                    $this->container?->has($typeName) &&
-                    null !== ($value = $this->container->get($typeName)) &&
-                    $this->checkType($value, $type)
-                ) {
-                    $args[$name] = $value;
+
+
+                    // Nullable
+                    if (
+                        $type !== null &&
+                        $type->allowsNull() &&
+                        !$param->isDefaultValueAvailable()
+                    ) {
+                        $args[$name] = null;
+                        continue;
+                    }
+
+
+
+                    // Archetype
+                    if ($class = $this->archetype->tryResolve(
+                        $typeName,
+                        [$name, null]
+                    )) {
+                        $args[$name] = $this->newInstance($class);
+                        continue;
+                    }
+                }
+
+
+
+                // Default value
+                if ($param->isDefaultValueAvailable()) {
+                    $args[$name] = $param->getDefaultValue();
                     continue;
                 }
 
 
-                // Nullable
+                // Null
                 if (
                     $type !== null &&
-                    $type->allowsNull() &&
-                    !$param->isDefaultValueAvailable()
+                    $type->allowsNull()
                 ) {
                     $args[$name] = null;
                     continue;
                 }
 
 
-
-                // Archetype
-                if ($class = $this->archetype->tryResolve(
-                    $typeName,
-                    [$name, null]
-                )) {
-                    try {
-                        $args[$name] = $this->newInstance($class);
-                    } catch (Throwable $e) {
-                        self::$stack--;
-                        throw $e;
-                    }
+                // New instance
+                if (
+                    $typeName !== null &&
+                    (new ReflectionClass($typeName))->isInstantiable()
+                ) {
+                    $args[$name] = $this->newInstance($typeName);
                     continue;
                 }
-            }
 
-
-
-            // Default value
-            if ($param->isDefaultValueAvailable()) {
-                $args[$name] = $param->getDefaultValue();
-                continue;
-            }
-
-
-            // Null
-            if (
-                $type !== null &&
-                $type->allowsNull()
-            ) {
-                $args[$name] = null;
-                continue;
-            }
-
-
-            // New instance
-            if (
-                $typeName !== null &&
-                (new ReflectionClass($typeName))->isInstantiable()
-            ) {
-                try {
-                    $args[$name] = $this->newInstance($typeName);
-                } catch (Throwable $e) {
-                    self::$stack--;
-                    throw $e;
+                if (isset($parameters[$name])) {
+                    throw Exceptional::Definition(
+                        message: 'Parameter $' . $name . ' is not type compatible - ' . $type . ' expected, ' . gettype($parameters[$name]) . ' given'
+                    );
                 }
 
-                continue;
-            }
-
-
-            self::$stack--;
-
-            if (isset($parameters[$name])) {
                 throw Exceptional::Definition(
-                    message: 'Parameter $' . $name . ' is not type compatible - ' . $type . ' expected, ' . gettype($parameters[$name]) . ' given'
+                    message: 'Unable to resolve constructor parameter ' . (string)$type . ' $' . $param->getName(),
+                    data: $function
                 );
             }
 
-            throw Exceptional::Definition(
-                message: 'Unable to resolve constructor parameter ' . (string)$type . ' $' . $param->getName(),
-                data: $function
-            );
-        }
 
-        return $function(...$args);
+            return $function(...$args);
+        } catch (Throwable $e) {
+            throw $e;
+        } finally {
+            self::$stack--;
+        }
     }
 
 
