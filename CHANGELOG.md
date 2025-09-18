@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### [v0.3.5](https://github.com/decodelabs/slingshot/commits/v0.3.5) - 18th September 2025
 
-- Invoke stack recursoin check
+- Fixed invoke stack recursion check
 - Simplified CI workflow
 
 [Full list of changes](https://github.com/decodelabs/slingshot/compare/v0.3.4...v0.3.5)
