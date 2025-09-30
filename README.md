@@ -15,6 +15,8 @@ Slingshot provides a simple interface for invoking methods on objects with depen
 
 ## Installation
 
+This package requires PHP 8.4 or higher.
+
 Install via Composer:
 
 ```bash
