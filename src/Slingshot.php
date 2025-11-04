@@ -1,8 +1,8 @@
 <?php
 
 /**
- * @package Slingshot
- * @license http://opensource.org/licenses/MIT
+ * Slingshot
+ * @license https://opensource.org/licenses/MIT
  */
 
 declare(strict_types=1);
