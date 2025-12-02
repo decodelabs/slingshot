@@ -2,7 +2,7 @@
     "name": "decodelabs/slingshot",
     "description": "Unified dependency injection invoker",
     "type": "library",
-    "keywords": [],
+    "keywords": [ ],
     "license": "MIT",
     "authors": [
         {
@@ -20,7 +20,7 @@
         "decodelabs/monarch": "^0.2"
     },
     "require-dev": {
-        "decodelabs/chorus": "^0.1",
+        "decodelabs/chorus": ">0",
         "decodelabs/phpstan-decodelabs": "^0.7"
     },
     "autoload": {
