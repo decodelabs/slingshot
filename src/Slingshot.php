@@ -44,11 +44,17 @@ class Slingshot
 
     public Archetype $archetype {
         get {
-            // @phpstan-ignore-next-line
-            return $this->archetype ??=
+            if (isset($this->archetype)) {
+                return $this->archetype;
+            }
+
+            /** @var Archetype $archetype */
+            $archetype =
                 $this->container instanceof ContainerAdapter
                     ? $this->container->get(Archetype::class)
                     : Monarch::getService(Archetype::class);
+
+            return $this->archetype = $archetype;
         }
     }
 
@@ -436,7 +442,6 @@ class Slingshot
 
                     // Nullable
                     if (
-                        $type !== null &&
                         $type->allowsNull() &&
                         !$param->isDefaultValueAvailable()
                     ) {
